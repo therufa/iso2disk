@@ -21,6 +21,8 @@ function bootdisk {
 			IMG="$2"
 			ISO="$3"
 
+			echo "Converting $ISO to $IMG ..."
+
 			# Convert ISO format to OS X img format
 			$(hdiutil convert -format UDRW -o "$IMG" "$ISO")
 
@@ -28,6 +30,8 @@ function bootdisk {
 			if [ -f "$IMG.dmg" ]; then
 				mv "$IMG.dmg" "$IMG"
 			fi
+
+			echo "Conversion done."
 		else
 			echo "Missing parameter! Usage: bootdisk convert <input> <output>"
 		fi

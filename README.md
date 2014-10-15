@@ -21,6 +21,8 @@ write a simple iso file to an USB stick.
 
 Download the file, give it the right permission and run it like this:
 
+	bash$ chmod +x iso2disk
+
 	bash$ ./iso2disk convert ubuntu.img ubuntu.iso
 	Converting ubuntu.iso to ubuntu.img ...
 	Conversion done ...

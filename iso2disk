@@ -1,0 +1,78 @@
+#!/bin/bash
+
+
+opt=$@
+
+function bootdisk {
+	_dev=""
+	_devices=$(ls /dev/disk*)
+	_dev_count=$(echo $_devices | wc -w)
+
+	case "$1" in
+	devices)
+		i=1;
+		for disk in $_devices; do
+			echo "$i. $disk";
+			let i=i+1;
+		done
+		;;
+	convert)
+		if [[ $2 || $3 ]]; then
+			IMG="$2"
+			ISO="$3"
+
+			# Convert ISO format to OS X img format
+			$(hdiutil convert -format UDRW -o "$IMG" "$ISO")
+
+			# Rename file extension to proper form
+			if [ -f "$IMG.dmg" ]; then
+				mv "$IMG.dmg" "$IMG"
+			fi
+		else
+			echo "Missing parameter! Usage: bootdisk convert <input> <output>"
+		fi
+		;;
+	burn)
+		dev_id=-1
+		bootdisk "devices"
+		read -p "Please select a device. [1-$_dev_count]: " dev_id
+
+		let dev_id=dev_id-1
+		arr_devices=($_devices) # convert to array
+
+		if [[ "$dev_id" -gt "$_dev_count" || "$dev_id" = -1 ]]; then
+			echo "Invalid device ID"
+			exit
+		fi
+
+		target_disk="${arr_devices[$dev_id]}"
+
+		echo "Disk $target_disk selected"
+
+		sudo diskutil unmountDisk $target_disk
+
+		echo "Burning..."
+		sudo dd if=$2 of=$target_disk bs=1m
+
+		echo "All data copied to disk."
+
+		diskutil eject $target_disk
+		;;
+	help)
+		echo "Usage: devices"
+		echo "convert"
+		echo "burn"
+		echo "help"
+		;;
+	all)
+		bootdisk "convert" $2 $3
+		bootdisk "burn" $2
+		;;
+	*)
+		echo "Missing parameter"
+		bootdisk "help"
+		;;
+	esac
+}
+
+bootdisk $opt
